@@ -7,18 +7,22 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
-import { createGallery, getUsers } from '@/lib/supabase/queries'
-import type { User } from '@/types'
+import { createGallery, updateGallery, getUsers } from '@/lib/supabase/queries'
+import type { Gallery, User } from '@/types'
 
-export function ImageUpload() {
+interface ImageUploadProps {
+  image?: Gallery | null
+}
+
+export function ImageUpload({ image }: ImageUploadProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [users, setUsers] = useState<User[]>([])
-  const [imageUrl, setImageUrl] = useState('')
+  const [imageUrl, setImageUrl] = useState(image?.pautan_gambar || '')
   const [formData, setFormData] = useState({
-    user_id: '',
-    keterangan: '',
-    tags: '',
+    user_id: image?.user_id || '',
+    keterangan: image?.keterangan || '',
+    tags: image?.tags || '',
   })
 
   useEffect(() => {
@@ -35,13 +39,19 @@ export function ImageUpload() {
     setLoading(true)
 
     try {
-      await createGallery({
+      const data = {
         user_id: formData.user_id || null,
         keterangan: formData.keterangan || null,
         tags: formData.tags || null,
         pautan_gambar: imageUrl,
         file_id: null,
-      })
+      }
+
+      if (image) {
+        await updateGallery(image.id, data)
+      } else {
+        await createGallery(data)
+      }
       router.push('/gallery')
       router.refresh()
     } catch (error) {

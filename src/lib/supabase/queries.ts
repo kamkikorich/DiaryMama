@@ -83,11 +83,36 @@ export async function getExpenses(limit = 50): Promise<Expense[]> {
   return data
 }
 
+export async function getExpenseById(id: string): Promise<Expense | null> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('expenses')
+    .select('*, users(nama)')
+    .eq('id', id)
+    .single()
+
+  if (error) return null
+  return data
+}
+
 export async function createExpense(entry: Omit<Expense, 'id' | 'created_at'>) {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('expenses')
     .insert(entry)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function updateExpense(id: string, entry: Partial<Expense>) {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('expenses')
+    .update(entry)
+    .eq('id', id)
     .select()
     .single()
 
@@ -122,11 +147,36 @@ export async function getGallery(limit = 50): Promise<Gallery[]> {
   return data
 }
 
+export async function getGalleryById(id: string): Promise<Gallery | null> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('gallery')
+    .select('*, users(nama)')
+    .eq('id', id)
+    .single()
+
+  if (error) return null
+  return data
+}
+
 export async function createGallery(entry: Omit<Gallery, 'id' | 'created_at'>) {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('gallery')
     .insert(entry)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function updateGallery(id: string, entry: Partial<Gallery>) {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('gallery')
+    .update(entry)
+    .eq('id', id)
     .select()
     .single()
 

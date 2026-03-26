@@ -7,19 +7,23 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { createExpense, getUsers } from '@/lib/supabase/queries'
-import type { User } from '@/types'
+import { createExpense, updateExpense, getUsers } from '@/lib/supabase/queries'
+import type { Expense, User } from '@/types'
 
-export function ExpenseForm() {
+interface ExpenseFormProps {
+  expense?: Expense | null
+}
+
+export function ExpenseForm({ expense }: ExpenseFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [users, setUsers] = useState<User[]>([])
   const [formData, setFormData] = useState({
-    user_id: '',
-    jenis: 'Keluar' as 'Masuk' | 'Keluar',
-    jumlah: '',
-    nota: '',
-    pautan_resit: '',
+    user_id: expense?.user_id || '',
+    jenis: expense?.jenis || 'Keluar',
+    jumlah: expense?.jumlah?.toString() || '',
+    nota: expense?.nota || '',
+    pautan_resit: expense?.pautan_resit || '',
   })
 
   useEffect(() => {
@@ -31,13 +35,19 @@ export function ExpenseForm() {
     setLoading(true)
 
     try {
-      await createExpense({
+      const data = {
         user_id: formData.user_id || null,
-        jenis: formData.jenis,
+        jenis: formData.jenis as 'Masuk' | 'Keluar',
         jumlah: parseFloat(formData.jumlah),
         nota: formData.nota || null,
         pautan_resit: formData.pautan_resit || null,
-      })
+      }
+
+      if (expense) {
+        await updateExpense(expense.id, data)
+      } else {
+        await createExpense(data)
+      }
       router.push('/expenses')
       router.refresh()
     } catch (error) {

@@ -1,13 +1,33 @@
+'use client'
+
 import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { formatDate, formatTime } from '@/lib/utils'
+import { deleteDiary } from '@/lib/supabase/queries'
 import type { Diary } from '@/types'
-import { Calendar, MapPin, Clock } from 'lucide-react'
+import { Calendar, MapPin, Clock, Pencil, Trash2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 interface DiaryCardProps {
   diary: Diary
 }
 
 export function DiaryCard({ diary }: DiaryCardProps) {
+  const router = useRouter()
+
+  const handleDelete = async () => {
+    if (!confirm('Padam entri diari ini?')) return
+
+    try {
+      await deleteDiary(diary.id)
+      router.refresh()
+    } catch (error) {
+      console.error('Error deleting diary:', error)
+      alert('Ralat memadam diari')
+    }
+  }
+
   return (
     <Card className="mb-3">
       <CardContent className="p-4">
@@ -27,11 +47,21 @@ export function DiaryCard({ diary }: DiaryCardProps) {
               )}
             </div>
           </div>
-          {diary.status_kejadian && (
-            <span className="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full">
-              {diary.status_kejadian}
-            </span>
-          )}
+          <div className="flex items-center gap-1">
+            {diary.status_kejadian && (
+              <span className="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full mr-2">
+                {diary.status_kejadian}
+              </span>
+            )}
+            <Link href={`/diary/${diary.id}/edit`}>
+              <Button variant="ghost" size="icon">
+                <Pencil className="w-4 h-4 text-gray-400" />
+              </Button>
+            </Link>
+            <Button variant="ghost" size="icon" onClick={handleDelete}>
+              <Trash2 className="w-4 h-4 text-gray-400" />
+            </Button>
+          </div>
         </div>
 
         {diary.lokasi && (

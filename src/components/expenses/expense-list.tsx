@@ -4,8 +4,9 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import { deleteExpense } from '@/lib/supabase/queries'
 import { Button } from '@/components/ui/button'
 import type { Expense } from '@/types'
-import { Trash2, ArrowUpCircle, ArrowDownCircle } from 'lucide-react'
+import { Trash2, Pencil, ArrowUpCircle, ArrowDownCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 interface ExpenseListProps {
   expenses: Expense[]
@@ -55,13 +56,20 @@ export function ExpenseList({ expenses }: ExpenseListProps) {
               )}
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => handleDelete(expense.id)}
-          >
-            <Trash2 className="w-4 h-4 text-gray-400" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <Link href={`/expenses/${expense.id}/edit`}>
+              <Button variant="ghost" size="icon">
+                <Pencil className="w-4 h-4 text-gray-400" />
+              </Button>
+            </Link>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleDelete(expense.id)}
+            >
+              <Trash2 className="w-4 h-4 text-gray-400" />
+            </Button>
+          </div>
         </div>
       ))}
     </div>

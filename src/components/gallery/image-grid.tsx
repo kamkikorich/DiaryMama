@@ -5,8 +5,9 @@ import { formatDate } from '@/lib/utils'
 import { deleteGallery } from '@/lib/supabase/queries'
 import { Button } from '@/components/ui/button'
 import type { Gallery } from '@/types'
-import { Trash2, X } from 'lucide-react'
+import { Trash2, X, Pencil } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 interface ImageGridProps {
   images: Gallery[]
@@ -54,14 +55,21 @@ export function ImageGrid({ images }: ImageGridProps) {
                 <p>{image.users?.nama}</p>
                 <p>{formatDate(image.created_at)}</p>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white hover:text-red-400"
-                onClick={() => handleDelete(image.id)}
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
+              <div className="flex gap-1">
+                <Link href={`/gallery/${image.id}/edit`}>
+                  <Button variant="ghost" size="icon" className="text-white hover:text-blue-400">
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:text-red-400"
+                  onClick={() => handleDelete(image.id)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </div>
         ))}
