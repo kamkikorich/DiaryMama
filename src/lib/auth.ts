@@ -10,7 +10,7 @@ export interface SessionData {
 }
 
 export async function encrypt(payload: SessionData): Promise<string> {
-  return new SignJWT(payload as any)
+  return new SignJWT(payload as unknown as Record<string, unknown>)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('7d')
@@ -22,7 +22,11 @@ export async function decrypt(token: string): Promise<SessionData | null> {
     const { payload } = await jwtVerify(token, key, {
       algorithms: ['HS256'],
     })
-    return payload as SessionData
+    const data = payload as unknown as SessionData
+    if (typeof data.isAuthenticated === 'boolean' && data.expiresAt) {
+      return data
+    }
+    return null
   } catch {
     return null
   }
