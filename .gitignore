@@ -29,6 +29,14 @@ yarn-error.log*
 .env*.local
 .env
 
+# sensitive files
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!appsscript.json
+!public/manifest.json
+
 # vercel
 .vercel
 
