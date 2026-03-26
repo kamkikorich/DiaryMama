@@ -38,6 +38,35 @@ export function validateFile(file: File): FileValidation {
 }
 
 /**
+ * Validate image file only
+ */
+export function validateImageFile(file: File): FileValidation {
+  if (!file.type.startsWith('image/')) {
+    return {
+      valid: false,
+      error: 'Hanya fail gambar yang dibenarkan (JPG, PNG, WEBP).'
+    }
+  }
+
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    return {
+      valid: false,
+      error: 'Format tidak disokong. Gunakan JPG, PNG atau WEBP.'
+    }
+  }
+
+  if (file.size > MAX_FILE_SIZE * 3) {
+    // Allow up to 15MB before compression for gallery images
+    return {
+      valid: false,
+      error: 'Fail terlalu besar. Maksimum 15MB.'
+    }
+  }
+
+  return { valid: true }
+}
+
+/**
  * Compress image file using canvas
  */
 export async function compressImage(file: File, maxWidth = 1200, quality = 0.8): Promise<File> {
@@ -141,6 +170,58 @@ export async function uploadDocument(file: File): Promise<UploadResult> {
   } catch (error) {
     console.error('Upload error:', error)
     return { success: false, error: 'Ralat memuat naik fail.' }
+  }
+}
+
+/**
+ * Upload image to Supabase Storage (for gallery)
+ */
+export async function uploadImage(file: File): Promise<UploadResult> {
+  try {
+    // Validate image
+    const validation = validateImageFile(file)
+    if (!validation.valid) {
+      return { success: false, error: validation.error }
+    }
+
+    // Compress image
+    const processedFile = await compressImage(file, 1920, 0.85)
+
+    // Check size after compression
+    if (processedFile.size > MAX_FILE_SIZE) {
+      return { success: false, error: `Fail masih melebihi ${MAX_FILE_SIZE / 1024 / 1024}MB selepas pemampatan.` }
+    }
+
+    const supabase = createClient()
+
+    // Generate unique filename
+    const timestamp = Date.now()
+    const randomStr = Math.random().toString(36).substring(7)
+    const ext = file.name.split('.').pop()
+    const filename = `gallery/${timestamp}-${randomStr}.${ext}`
+
+    // Upload
+    const { data, error } = await supabase.storage
+      .from(BUCKET_NAME)
+      .upload(filename, processedFile, {
+        contentType: file.type,
+        upsert: false
+      })
+
+    if (error) {
+      console.error('Upload error:', error)
+      return { success: false, error: 'Gagal memuat naik gambar.' }
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from(BUCKET_NAME)
+      .getPublicUrl(data.path)
+
+    return { success: true, url: urlData.publicUrl }
+  } catch (error) {
+    console.error('Upload error:', error)
+    return { success: false, error: 'Ralat memuat naik gambar.' }
   }
 }
 
