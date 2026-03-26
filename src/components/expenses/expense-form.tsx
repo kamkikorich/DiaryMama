@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { FileInput } from '@/components/ui/file-input'
 import { createExpense, updateExpense, getUsers } from '@/lib/supabase/queries'
 import type { Expense, User } from '@/types'
 
@@ -116,17 +117,10 @@ export function ExpenseForm({ expense }: ExpenseFormProps) {
         />
       </div>
 
-      <div>
-        <Label htmlFor="pautan_resit">Pautan Resit (URL)</Label>
-        <Input
-          id="pautan_resit"
-          type="url"
-          value={formData.pautan_resit}
-          onChange={(e) => setFormData({ ...formData, pautan_resit: e.target.value })}
-          placeholder="https://..."
-          className="mt-1"
-        />
-      </div>
+      <FileInput
+        value={formData.pautan_resit}
+        onChange={(url) => setFormData({ ...formData, pautan_resit: url })}
+      />
 
       <div className="flex gap-3 pt-4">
         <Button type="button" variant="outline" onClick={() => router.back()} className="flex-1">
